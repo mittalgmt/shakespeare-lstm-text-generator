@@ -1,176 +1,656 @@
-# Shakespeare LSTM Text Generator
+Shakespeare LSTM Text Generator
 
-An interview-task implementation of **Generative AI with LSTM – Text Generation** using TensorFlow/Keras.
+A word-level language model built with Python and TensorFlow/Keras to generate Shakespeare-style text using an LSTM neural network.
 
-## 1. Task requirements covered
+This project demonstrates an end-to-end Generative AI / NLP text-generation pipeline:
 
-- Public-domain Shakespeare text dataset
-- Lowercasing and punctuation removal
-- Word tokenization
-- Input/output next-token pairs
-- Embedding + LSTM + Dense softmax architecture
-- Categorical next-word prediction using sparse categorical cross-entropy
-- Adam optimizer
-- Training/validation split
-- Early stopping
-- Best-model checkpoint
-- Seed-based iterative text generation
-- Multiple sample outputs
-- Reproducible vocabulary and metrics
+Shakespeare Corpus
+       ↓
+Text Cleaning
+       ↓
+Word Tokenization
+       ↓
+Vocabulary Construction
+       ↓
+Input / Next-Word Sequences
+       ↓
+Embedding
+       ↓
+LSTM
+       ↓
+Dropout
+       ↓
+Dense + Softmax
+       ↓
+Temperature + Top-K Sampling
+       ↓
+Generated Text
 
-## 2. Project structure
+1. Project Objective
 
-```text
-shakespeare-lstm-text-generator/
-├── main.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── data/
-│   └── shakespeare.txt        # downloaded locally; not committed
-└── artifacts/
-    ├── best_model.keras
-    ├── vocab.json
-    ├── metrics.json
-    └── sample_outputs.txt
-```
-
-## 3. Dataset
-
-The dataset is **The Complete Works of William Shakespeare** from Project Gutenberg, eBook #100.
-
-Dataset page:
-https://www.gutenberg.org/ebooks/100
-
-The script downloads the plain-text file automatically. The dataset is not committed to GitHub because it is unnecessary for the code repository.
-
-## 4. Setup
-
-Recommended: Python 3.10 or 3.11.
-
-### Windows
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python main.py
-```
-
-### If `python` is not recognized
-
-Try:
-
-```bash
-py -m venv venv
-venv\Scripts\activate
-py -m pip install -r requirements.txt
-py main.py
-```
-
-## 5. Model architecture
-
-```text
-Input: 20 word IDs
-        ↓
-Embedding(8,000 vocabulary, 128 dimensions)
-        ↓
-LSTM(128 units)
-        ↓
-Dropout(0.20)
-        ↓
-Dense(8,000, softmax)
-        ↓
-Probability of the next word
-```
-
-The model learns:
-
-```text
-input words → next word
-```
+The objective is to build a generative language model that learns patterns from Shakespeare's text and generates new text based on a user-provided seed phrase.
 
 Example:
 
-```text
-Input:  to be or not to
-Target: be
-```
+Seed:
+to be or not to be
 
-During generation, the predicted word is appended to the context and becomes part of the next input.
+The model predicts one word at a time. Each predicted word is added to the context and used to predict the following word.
 
-## 6. Why these choices?
+2. Dataset
 
-- **Word-level tokenization:** directly demonstrates next-word generation and is easy to explain in an interview.
-- **20-word sequence:** gives the LSTM enough context without making training unnecessarily slow.
-- **8,000-word vocabulary:** keeps the final Dense layer practical on a laptop.
-- **128-dimensional embedding:** gives each word a learned vector representation.
-- **128 LSTM units:** enough capacity for a small interview project.
-- **Adam:** reliable default optimizer for this task.
-- **Sparse categorical cross-entropy:** appropriate because the target is one integer token ID.
-- **EarlyStopping:** stops when validation loss stops improving.
-- **ModelCheckpoint:** keeps the best model instead of blindly using the final epoch.
-- **Temperature:** controls generation randomness.
+The project uses The Complete Works of William Shakespeare from Project Gutenberg, eBook #100.
 
-## 7. Results
+Dataset page:
 
-After training, `artifacts/metrics.json` records the best validation loss, number of epochs completed, vocabulary size and training/validation example counts.
+https://www.gutenberg.org/ebooks/100
 
-`artifacts/sample_outputs.txt` contains generated text from three different seed inputs.
+The dataset is downloaded automatically by main.py and stored locally as:
 
-## 8. Bonus experiment
+data/shakespeare.txt
 
-If time remains, change:
+The dataset file is intentionally not committed to GitHub because it can be downloaded automatically when the project is executed.
 
-```python
-LSTM_UNITS = 128
-```
+3. Project Structure
 
-to:
+shakespeare-lstm-text-generator/
+│
+├── main.py
+│       Main training pipeline
+│
+├── generate_compare.py
+│       Inference script for comparing
+│       temperature and Top-K sampling
+│
+├── experiment_seq30.py
+│       Controlled sequence-length experiment
+│
+├── requirements.txt
+│       Python dependencies
+│
+├── README.md
+│
+├── .gitignore
+│
+├── data/
+│   └── shakespeare.txt
+│       Downloaded locally; not committed
+│
+└── artifacts/
+    ├── best_model.keras
+    │       Best model checkpoint
+    │
+    ├── vocab.json
+    │       Saved vocabulary mappings
+    │
+    ├── metrics.json
+    │       Training metrics
+    │
+    └── sample_outputs.txt
+            Generated text samples
 
-```python
-LSTM_UNITS = 256
-```
+4. Technologies Used
 
-or add a second LSTM layer using `return_sequences=True`.
+Python
 
-Compare validation loss and sample quality and document the result in the README.
+TensorFlow / Keras
 
-## 9. Limitations
+NumPy
 
-- The model was trained on a limited subset of the Shakespeare corpus
-  to keep training time practical.
-- Generated text may contain grammatically inconsistent sequences.
-- `<UNK>` can appear when a word is outside the retained vocabulary.
-- LSTM generation quality depends strongly on dataset size, sequence
-  length, vocabulary size, and training time.
+Matplotlib
 
+LSTM
 
+Word-level language modeling
 
+5. Setup
 
-## Results
+Recommended:
 
-The model was trained on 120,000 Shakespeare tokens using a word-level
-LSTM language model.
+Python 3.10 or Python 3.11
 
-### Training Results
+Create virtual environment
 
-- Training examples: 53,991
-- Validation examples: 5,999
-- Best validation loss: 6.5899
-- Best epoch: 5
-- Early stopping: Yes
+Windows:
 
-### Sample Generated Text
+python -m venv venv
+venv\Scripts\activate
 
-#### Seed: `to be or not to be`
+Install dependencies
 
-> to be or not to be thy feasting steal with the own your tune is purse the reed murd most lafew of the dinner of a third love in i well farewell in my break the country and and convey frederick was for the story for
+pip install -r requirements.txt
 
-#### Seed: `shall i compare thee`
+Run the complete training pipeline
 
-> shall i compare thee to this the conspire enter as thy power love and undertake so asked like his tiber that in the palace as my worship a hand is and shame and beloving thy art <UNK> ay no rather seen i are you
+python main.py
 
-#### Seed: `love is`
+The script automatically:
 
-> love is thank he have the room of thee well agrippa s my majesty look thou please it no lord the man i ll her let if you will mine s it is you rossillon say at make mine is menecrates be
+Downloads the dataset if it does not already exist.
+
+Cleans and tokenizes the text.
+
+Builds the vocabulary.
+
+Creates input/target sequences.
+
+Splits the data into training and validation sets.
+
+Builds and trains the LSTM model.
+
+Uses early stopping and model checkpointing.
+
+Saves the best model.
+
+Generates text from multiple seed phrases.
+
+Saves vocabulary, metrics and generated outputs.
+
+6. Text Preprocessing
+
+The raw Shakespeare text is processed using:
+
+Lowercasing
+
+To Be, Or Not To Be
+
+becomes:
+
+to be or not to be
+
+Punctuation removal
+
+Punctuation and non-alphabetic characters are removed.
+
+Tokenization
+
+The cleaned text is split into individual words:
+
+["to", "be", "or", "not", "to", "be"]
+
+7. Vocabulary Construction
+
+The project uses approximately 8,000 tokens.
+
+The most frequent words are assigned integer IDs.
+
+An <UNK> token is reserved for words outside the retained vocabulary.
+
+This keeps the final Dense + Softmax layer practical for CPU-based training.
+
+8. Input / Target Sequence Creation
+
+The baseline model uses a context length of:
+
+20 words
+
+The model performs next-word prediction:
+
+previous 20 words → next word
+
+During generation, the predicted word is appended to the sequence and used as part of the next prediction.
+
+9. Model Architecture
+
+Input
+20 word IDs
+     ↓
+Embedding
+128-dimensional word representation
+     ↓
+LSTM
+128 units
+     ↓
+Dropout
+0.20
+     ↓
+Dense
+8,000 output classes
+     ↓
+Softmax
+     ↓
+Next-word probability distribution
+
+Configuration
+
+Parameter
+
+Value
+
+Tokenization
+
+Word-level
+
+Vocabulary
+
+8,000
+
+Sequence length
+
+20
+
+Embedding dimension
+
+128
+
+LSTM units
+
+128
+
+Dropout
+
+0.20
+
+Optimizer
+
+Adam
+
+Learning rate
+
+0.001
+
+Batch size
+
+128
+
+Maximum epochs
+
+12
+
+Loss
+
+Sparse categorical cross-entropy
+
+10. Why These Choices?
+
+Word-level tokenization: directly demonstrates next-word generation and is easy to explain.
+
+Sequence length = 20: provides useful context while keeping CPU training practical.
+
+8,000-word vocabulary: keeps the final Dense layer practical on a laptop.
+
+128-dimensional embedding: gives each word a learned vector representation.
+
+128 LSTM units: provides reasonable capacity for a small language model.
+
+Dropout = 0.20: provides regularization.
+
+Adam: suitable adaptive optimizer for this task.
+
+Sparse categorical cross-entropy: appropriate because the target is an integer token ID.
+
+11. Training and Validation
+
+The dataset is divided chronologically:
+
+90% → Training
+10% → Validation
+
+A chronological split is used rather than randomly shuffling the text.
+
+Dataset statistics
+
+Tokens used:       120,000
+Training examples: 53,991
+Validation examples: 5,999
+
+12. Early Stopping and Model Checkpointing
+
+The model monitors validation loss with:
+
+patience = 2
+
+The best model is saved to:
+
+artifacts/best_model.keras
+
+In the baseline run, validation loss improved through Epoch 5 and then worsened in Epochs 6 and 7. Training therefore stopped at Epoch 7 and restored the best weights from Epoch 5.
+
+13. Training Results
+
+Baseline model
+
+Epoch
+
+Training Loss
+
+Validation Loss
+
+1
+
+6.7999
+
+6.7233
+
+2
+
+6.4231
+
+6.6727
+
+3
+
+6.2519
+
+6.6217
+
+4
+
+6.0962
+
+6.5982
+
+5
+
+5.9467
+
+6.5899
+
+6
+
+5.8055
+
+6.6084
+
+7
+
+5.6814
+
+6.6365
+
+Best validation loss: 6.5899Best epoch: 5Early stopping: Epoch 7
+
+The increasing validation loss while training loss continued decreasing is consistent with the model beginning to overfit the training data.
+
+14. Text Generation
+
+Generation is performed iteratively:
+
+Seed text
+    ↓
+Convert words to IDs
+    ↓
+Predict next-word probabilities
+    ↓
+Apply temperature
+    ↓
+Apply Top-K filtering
+    ↓
+Sample next word
+    ↓
+Append word to context
+    ↓
+Repeat
+
+15. Temperature Sampling
+
+Temperature controls randomness.
+
+Temperature
+
+Expected behavior
+
+0.5
+
+More conservative / predictable
+
+0.8
+
+Balanced
+
+1.0
+
+More diverse
+
+16. Top-K Sampling
+
+Top-K sampling restricts the next-word choice to the K most probable candidates.
+
+The generation comparison uses:
+
+Temperature
+
+Top-K
+
+Purpose
+
+0.5
+
+10
+
+Conservative generation
+
+0.8
+
+20
+
+Balanced generation
+
+1.0
+
+40
+
+More diverse generation
+
+Run:
+
+python generate_compare.py
+
+17. Sample Generated Text
+
+Seed: to be or not to be
+
+to be or not to be thy feasting steal with the own your tune is purse
+the reed murd most lafew of the dinner of a third love in i well
+farewell in my break the country and and convey frederick was for the
+story for
+
+Seed: shall i compare thee
+
+shall i compare thee to this the conspire enter as thy power love and
+undertake so asked like his tiber that in the palace as my worship a
+hand is and shame and beloving thy art <UNK> ay no rather seen i are you
+
+Seed: love is
+
+love is thank he have the room of thee well agrippa s my majesty look
+thou please it no lord the man i ll her let if you will mine s it is you
+rossillon say at make mine is menecrates be
+
+Complete outputs are saved in:
+
+artifacts/sample_outputs.txt
+
+18. Controlled Experiment — Sequence Length
+
+A controlled experiment tested whether increasing the context window improves next-word prediction.
+
+Baseline
+
+Sequence length = 20
+Best validation loss = 6.5899
+Best epoch = 5
+
+Experiment
+
+Sequence length = 30
+Best validation loss = 6.5823
+Best epoch = 5
+
+Comparison
+
+Model
+
+Sequence Length
+
+Best Validation Loss
+
+Best Epoch
+
+Baseline
+
+20
+
+6.5899
+
+5
+
+Experiment
+
+30
+
+6.5823
+
+5
+
+The 30-word context produced a small improvement in validation loss:
+
+6.5899 → 6.5823
+
+Only the sequence length was changed; the major model and training parameters were kept the same.
+
+Reproduce the experiment with:
+
+python experiment_seq30.py
+
+19. Model Artifacts
+
+Best model
+
+artifacts/best_model.keras
+
+Best validation-loss checkpoint.
+
+Vocabulary
+
+artifacts/vocab.json
+
+Word-to-ID and ID-to-word mappings.
+
+Metrics
+
+artifacts/metrics.json
+
+Training and validation metrics.
+
+Generated samples
+
+artifacts/sample_outputs.txt
+
+Generated text from multiple seeds.
+
+20. Limitations
+
+This is an educational LSTM language model rather than a large-scale modern language model.
+
+Training uses a limited subset of the Shakespeare corpus to keep CPU training practical.
+
+LSTMs have limited long-range context compared with Transformer-based language models.
+
+Generated text can contain grammatical inconsistencies.
+
+<UNK> may appear for words outside the retained vocabulary.
+
+The model may repeat words or produce semantically inconsistent sequences.
+
+Generation quality depends on vocabulary size, sequence length, model capacity and training time.
+
+21. Future Improvements
+
+Possible improvements include:
+
+Train on the complete Shakespeare corpus.
+
+Increase vocabulary size.
+
+Increase context length.
+
+Compare LSTM with GRU.
+
+Experiment with multiple LSTM layers.
+
+Add Top-P / nucleus sampling.
+
+Experiment with beam search.
+
+Compare the LSTM approach with a small Transformer language model.
+
+Train using GPU acceleration for larger datasets.
+
+22. Reproducibility
+
+A fixed random seed is used:
+
+SEED = 42
+
+The vocabulary and model artifacts are also saved to make inference reproducible.
+
+23. Interview Takeaways
+
+This project demonstrates practical understanding of:
+
+Text preprocessing
+
+Word-level tokenization
+
+Vocabulary construction
+
+Sequence modeling
+
+Embeddings
+
+LSTM networks
+
+Next-word prediction
+
+Softmax probability distributions
+
+Sparse categorical cross-entropy
+
+Adam optimization
+
+Train/validation splitting
+
+Early stopping
+
+Model checkpointing
+
+Temperature sampling
+
+Top-K sampling
+
+Controlled model experimentation
+
+Reproducible inference
+
+24. Quick Start
+
+git clone <repository-url>
+
+cd shakespeare-lstm-text-generator
+
+python -m venv venv
+
+venv\Scripts\activate
+
+pip install -r requirements.txt
+
+python main.py
+
+Generation comparison:
+
+python generate_compare.py
+
+Sequence-length experiment:
+
+python experiment_seq30.py
+
+25. Conclusion
+
+This project implements an end-to-end word-level generative language model using an LSTM.
+
+The baseline achieved a best validation loss of 6.5899, while the controlled 30-word context experiment achieved 6.5823.
+
+The project also demonstrates controlled text generation using temperature and Top-K sampling, together with early stopping and best-model checkpointing.
+
+The goal is to demonstrate the fundamental principles of neural language modeling and autoregressive text generation using LSTMs rather than reproduce the scale or capabilities of modern Transformer-based LLMs.

@@ -1,17 +1,3 @@
-"""
-Shakespeare LSTM Text Generator
-Interview Task: Generative AI with LSTM - Text Generation
-
-Pipeline:
-1. Download Shakespeare text from Project Gutenberg.
-2. Clean/lowercase/tokenize the corpus.
-3. Build a limited word vocabulary.
-4. Create input -> next-word training pairs.
-5. Train an LSTM language model with validation + callbacks.
-6. Generate text from multiple seed inputs.
-7. Save the model, vocabulary and sample outputs.
-"""
-
 from pathlib import Path
 import json
 import re
@@ -23,6 +9,7 @@ import tensorflow as tf
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+import matplotlib.pyplot as plt
 
 # -------------------- Configuration --------------------
 SEED = 42
@@ -123,7 +110,15 @@ def build_model(vocab_size):
 
 
 # -------------------- Text generation --------------------
-def generate_text(model, seed_text, word_to_id, id_to_word, num_words=40, temperature=0.8):
+def generate_text(
+    model,
+    seed_text,
+    word_to_id,
+    id_to_word,
+    num_words=40,
+    temperature=0.8,
+    top_k=20,
+    ):
     seed_tokens = re.sub(r"[^a-z\s]", " ", seed_text.lower()).split()
     if not seed_tokens:
         raise ValueError("Seed text must contain at least one word.")
@@ -141,13 +136,29 @@ def generate_text(model, seed_text, word_to_id, id_to_word, num_words=40, temper
         probabilities = model.predict(x, verbose=0)[0]
 
         # Temperature controls randomness:
-        # lower -> safer/more predictable, higher -> more diverse.
+        # lower -> more predictable, higher -> more diverse.
         probabilities = np.asarray(probabilities).astype("float64")
         probabilities = np.log(np.maximum(probabilities, 1e-9)) / temperature
         probabilities = np.exp(probabilities - np.max(probabilities))
         probabilities /= probabilities.sum()
 
-        next_id = np.random.choice(len(probabilities), p=probabilities)
+        # Top-K sampling: keep only the K most probable tokens.
+        if top_k is not None and top_k > 0:
+            top_indices = np.argsort(probabilities)[-top_k:]
+            top_probabilities = probabilities[top_indices]
+
+            # Re-normalize probabilities after filtering.
+            top_probabilities /= top_probabilities.sum()
+
+            next_id = np.random.choice(
+                top_indices,
+                p=top_probabilities,
+            )
+        else:
+            next_id = np.random.choice(
+                len(probabilities),
+                p=probabilities,
+            )
         next_word = id_to_word.get(int(next_id), "<UNK>")
 
         context.append(int(next_id))
@@ -212,6 +223,19 @@ def main():
         verbose=1,
     )
 
+    plt.figure(figsize=(8, 5))
+    plt.plot(history.history["loss"], label="Training Loss")
+    plt.plot(history.history["val_loss"], label="Validation Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Training vs Validation Loss")
+    plt.legend()
+    plt.grid(True)
+
+    plt.savefig("artifacts/training_curve.png", dpi=150, bbox_inches="tight")
+    plt.close()
+
+    print("[OK] Training curve: artifacts/training_curve.png")
     # Save vocabulary for reproducible generation.
     VOCAB_FILE.write_text(
         json.dumps(
@@ -245,7 +269,13 @@ def main():
     print("\n===== GENERATED TEXT =====")
     for seed in seeds:
         generated = generate_text(
-            model, seed, word_to_id, id_to_word, num_words=40, temperature=0.8
+            model,
+            seed,
+            word_to_id,
+            id_to_word,
+            num_words=40,
+            temperature=0.8,
+            top_k=20,
         )
         outputs.append(f"Seed: {seed}\n{generated}\n")
         print(f"\nSeed: {seed}\n{generated}")
