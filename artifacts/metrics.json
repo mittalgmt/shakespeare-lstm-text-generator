@@ -1,6 +1,6 @@
 {
-  "best_val_loss": 6.58989953994751,
-  "final_train_loss": 5.681369304656982,
+  "best_val_loss": 6.562902450561523,
+  "final_train_loss": 5.645282745361328,
   "epochs_completed": 7,
   "vocab_size": 8000,
   "train_examples": 53991,
