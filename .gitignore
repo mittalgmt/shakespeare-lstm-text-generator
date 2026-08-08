@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.vscode/
+.idea/
+data/*.txt
+artifacts/*.keras
+artifacts/*.h5
+artifacts/*.weights.h5

@@ -1,0 +1,2 @@
+Run `python main.py` to generate the real outputs.
+Do not invent sample results; paste the outputs produced by your trained model here before submission.
