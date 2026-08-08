@@ -778,9 +778,3 @@ and autoregressive text generation using LSTMs rather than reproduce the
 scale or capabilities of modern Transformer-based LLMs.
 
 ---
-
-<div align="center">
-
-### ⭐ Built as an interview-focused Generative AI / NLP project
-
-</div>
