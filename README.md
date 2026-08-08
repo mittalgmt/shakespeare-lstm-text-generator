@@ -136,17 +136,41 @@ or add a second LSTM layer using `return_sequences=True`.
 
 Compare validation loss and sample quality and document the result in the README.
 
-## 9. Important limitation
+## 9. Limitations
 
-This is a small educational LSTM language model, not an LLM. It learns statistical patterns from the Shakespeare corpus and therefore may generate grammatically imperfect or repetitive text. That is expected for a compact LSTM project.
+- The model was trained on a limited subset of the Shakespeare corpus
+  to keep training time practical.
+- Generated text may contain grammatically inconsistent sequences.
+- `<UNK>` can appear when a word is outside the retained vocabulary.
+- LSTM generation quality depends strongly on dataset size, sequence
+  length, vocabulary size, and training time.
 
-## 10. GitHub
 
-Do not commit:
 
-- `venv/`
-- raw dataset
-- Python cache
-- unnecessary large model files if your repository size becomes an issue
 
-The code and README are the main deliverables.
+## Results
+
+The model was trained on 120,000 Shakespeare tokens using a word-level
+LSTM language model.
+
+### Training Results
+
+- Training examples: 53,991
+- Validation examples: 5,999
+- Best validation loss: 6.5899
+- Best epoch: 5
+- Early stopping: Yes
+
+### Sample Generated Text
+
+#### Seed: `to be or not to be`
+
+> to be or not to be thy feasting steal with the own your tune is purse the reed murd most lafew of the dinner of a third love in i well farewell in my break the country and and convey frederick was for the story for
+
+#### Seed: `shall i compare thee`
+
+> shall i compare thee to this the conspire enter as thy power love and undertake so asked like his tiber that in the palace as my worship a hand is and shame and beloving thy art <UNK> ay no rather seen i are you
+
+#### Seed: `love is`
+
+> love is thank he have the room of thee well agrippa s my majesty look thou please it no lord the man i ll her let if you will mine s it is you rossillon say at make mine is menecrates be
